@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jekyll-blog
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jekyll-blog
+  template:
+    metadata:
+      labels:
+        app: jekyll-blog
+    spec:
+      containers:
+      - name: jekyll-blog
+        image: registry.dakim.dev/blog/jekyll/chirpy:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+      imagePullSecrets:
+        - name: regcred

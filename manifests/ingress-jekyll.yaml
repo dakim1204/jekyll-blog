@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
+  name: jekyll-blog
+  namespace: apps
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: dakim.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jekyll-blog
+            port: 
+              number: 80
+  tls:
+    - hosts:
+      - dakim.dev
+      secretName: blog-tls

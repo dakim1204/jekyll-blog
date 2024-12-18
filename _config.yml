@@ -120,10 +120,10 @@ comments:
     issue_term: # < url | pathname | title | ...>
   # Giscus options › https://giscus.app
   giscus:
-    repo: dakim1204/jekyll-blog # <gh-username>/<repo>
-    repo_id: R_kgDONfW7Qw
-    category: General
-    category_id: DIC_kwDONfW7Q84ClVcr
+    repo: # <gh-username>/<repo>
+    repo_id: 
+    category: 
+    category_id: 
     mapping: # optional, default to 'pathname'
     strict: # optional, default to '0'
     input_position: # optional, default to 'bottom'
