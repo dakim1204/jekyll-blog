@@ -9,12 +9,10 @@ RUN apt-get update && apt-get install -y \
 
 # 작업 디렉토리 설정
 WORKDIR /apps
-
-# Git 저장소 클론
-RUN git clone https://github.com/dakim1204/jekyll-blog .
+COPY . .
 
 # Gemfile이 있다고 가정하고, 의존성 설치
-# RUN bundle lock --add-platform x86_64-linux
+RUN bundle lock --add-platform x86_64-linux
 # COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
@@ -25,5 +23,5 @@ RUN jekyll build
 EXPOSE 4000
 
 # Jekyll 서버 실행
-CMD ["jekyll", "serve", "--host", "0.0.0.0"]
+CMD ["jekyll", "serve", "--production", "--host", "0.0.0.0"]
 # CMD ["./tools/run.sh", "--production", "--host", "0.0.0.0"]

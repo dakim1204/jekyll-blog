@@ -62,9 +62,31 @@ if ! python3 copy-images.py; then
   exit 1
 fi
 
+cd $APP_DIR
+git_status=$(git status --porcelain)
+current_datetime=$(date "+%Y-%m-%d %H:%M:%S")
+new_posts=$(echo "$git_status" | grep -E "(_posts/|assets/)")
+site_config=$(echo "$git_status" | grep -vE "(_posts/|assets/)")
+
+if [ -n "$new_posts" ]; then
+  git add _posts/ assets/
+  git commit -m "new blog post on $current_datetime"
+fi
+
+if [ -n "$site_config" ]; then
+  git add .
+  git commit -m "site configuration"
+fi
+
+# Step : Push all changes to the main branch
+echo "Deploying to GitHub Main..."
+if ! git push origin main; then
+  echo "Failed to push to main branch."
+  exit 1
+fi
+
 # Step 4: Build docker image and push to registry
 echo "Building docker image..."
-cd $APP_DIR
 if ! docker build --no-cache -t registry.dakim.dev/blog/jekyll/chirpy:latest .; then
   echo "Docker build failed."
   exit 1
@@ -72,30 +94,6 @@ fi
 
 if ! docker push registry.dakim.dev/blog/jekyll/chirpy:latest; then
   echo "Docker push failed."
-  exit 1
-fi
-
-# Step 5: Add changes to Git
-echo "Staging changes for Git..."
-if git diff --quiet && git diff --cached --quiet; then
-  echo "No changes to stage."
-else
-  git add .
-fi
-
-# Step 6: Commit changes with a dynamic message
-commit_message="New Blog Post on $(date +'%Y-%m-%d %H:%M:%S')"
-if git diff --cached --quiet; then
-  echo "No changes to commit."
-else
-  echo "Committing changes..."
-  git commit -m "$commit_message"
-fi
-
-# Step 7: Push all changes to the main branch
-echo "Deploying to GitHub Main..."
-if ! git push origin main; then
-  echo "Failed to push to main branch."
   exit 1
 fi
 
