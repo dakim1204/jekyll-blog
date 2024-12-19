@@ -3,12 +3,16 @@ set -euo pipefail
 
 # Change to the app root directory
 APP_DIR="/home/dakim/workspace/k3s/apps/jekyll-blog"
-TOOL_DIR="$APP_DIR/tools"
 cd $APP_DIR
 
 # Set variables for Obsidian to Jekyll copy
 sourcePath="/mnt/c/Users/tknza/iCloudDrive/iCloud~md~obsidian/blog-posts/"
 destinationPath="/home/dakim/workspace/k3s/apps/jekyll-blog/_posts/"
+
+git_status=$(git status --porcelain)
+current_datetime=$(date "+%Y-%m-%d %H:%M:%S")
+new_posts=$(echo "$git_status" | grep -E "(_posts/|assets/)")
+site_config=$(echo "$git_status" | grep -vE "(_posts/|assets/)")
 
 # Set GitHub Repo
 repo="jekyll-blog"
@@ -51,23 +55,17 @@ rsync -av --delete --no-perms --no-owner --no-group -0 "$sourcePath" "$destinati
 
 # Step 3: Process Markdown files with Python script to handle image links
 echo "Processing image links in Markdown files..."
-cd $TOOL_DIR
-if [ ! -f "copy-images.py" ]; then
+if [ ! -f "tools/copy-images.py" ]; then
   echo "Python script copy-images.py not found."
   exit 1
 fi
 
-if ! python3 copy-images.py; then
+if ! python3 tools/copy-images.py; then
   echo "Failed to process image links."
   exit 1
 fi
 
-cd $APP_DIR
-git_status=$(git status --porcelain)
-current_datetime=$(date "+%Y-%m-%d %H:%M:%S")
-new_posts=$(echo "$git_status" | grep -E "(_posts/|assets/)")
-site_config=$(echo "$git_status" | grep -vE "(_posts/|assets/)")
-
+# Step 4: Check if there is a change in repository
 if [ -n "$new_posts" ]; then
   git add _posts/ assets/
   git commit -m "new blog post on $current_datetime"
@@ -78,14 +76,14 @@ if [ -n "$site_config" ]; then
   git commit -m "site configuration"
 fi
 
-# Step : Push all changes to the main branch
+# Step 5: Push all changes to the main branch
 echo "Deploying to GitHub Main..."
 if ! git push origin main; then
   echo "Failed to push to main branch."
   exit 1
 fi
 
-# Step 4: Build docker image and push to registry
+# Step 6: Build docker image and push to registry
 echo "Building docker image..."
 if ! docker build --no-cache -t registry.dakim.dev/blog/jekyll/chirpy:latest .; then
   echo "Docker build failed."
@@ -97,7 +95,7 @@ if ! docker push registry.dakim.dev/blog/jekyll/chirpy:latest; then
   exit 1
 fi
 
-# Step 8: Restart jekyll-blog deployments
+# Step 7: Restart jekyll-blog deployments
 echo "Restarting jekyll-blog deployments..."
 if ! kubectl -n apps rollout restart deployments/jekyll-blog; then
   echo "Failed to restart deployments/jekyll-blog"
