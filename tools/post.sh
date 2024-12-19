@@ -103,3 +103,4 @@ if ! kubectl -n apps rollout restart deployments/jekyll-blog; then
 fi
 
 echo "All done! Site synced, processed, committed, built, and deployed."
+exit 0
