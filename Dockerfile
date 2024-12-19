@@ -23,5 +23,5 @@ RUN jekyll build
 EXPOSE 4000
 
 # Jekyll 서버 실행
-CMD ["jekyll", "serve", "--production", "--host", "0.0.0.0"]
+CMD ["jekyll", "serve", "--host", "0.0.0.0"]
 # CMD ["./tools/run.sh", "--production", "--host", "0.0.0.0"]
